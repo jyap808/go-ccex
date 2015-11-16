@@ -9,8 +9,8 @@ import (
 
 const (
 	API_BASE                   = "https://ccex.com/api/" // Ccex API endpoint
-	API_VERSION                = "v1.1"                     // Ccex API version
-	DEFAULT_HTTPCLIENT_TIMEOUT = 30                         // HTTP client timeout
+	API_VERSION                = "v1.1"                  // Ccex API version
+	DEFAULT_HTTPCLIENT_TIMEOUT = 30                      // HTTP client timeout
 )
 
 // New return a instanciate ccex struct
@@ -52,3 +52,13 @@ func (b *Ccex) GetDistribution(market string) (distribution Distribution, err er
 
 }
 
+func (b *Ccex) GetPairs() (pairs Pairs, err error) {
+	r, err := b.client.do("GET", "https://c-cex.com/t/pairs.json", "", false)
+	if err != nil {
+		return
+	}
+	if err = json.Unmarshal(r, &pairs); err != nil {
+		return
+	}
+	return
+}
