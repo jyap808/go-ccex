@@ -62,3 +62,14 @@ func (b *Ccex) GetPairs() (pairs Pairs, err error) {
 	}
 	return
 }
+
+func (b *Ccex) GetCoinNames() (coinnames CoinNames, err error) {
+	r, err := b.client.do("GET", "http://c-cex.com/t/coinnames.json", "", false)
+	if err != nil {
+		return
+	}
+	if err = json.Unmarshal(r, &coinnames); err != nil {
+		return
+	}
+	return
+}
