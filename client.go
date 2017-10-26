@@ -7,7 +7,9 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"net/http/httputil"
 	"strings"
 	"time"
 )
@@ -16,11 +18,38 @@ type client struct {
 	apiKey     string
 	apiSecret  string
 	httpClient *http.Client
+	debug      bool
 }
 
 // NewClient return a new Ccex HTTP client
 func NewClient(apiKey, apiSecret string) (c *client) {
-	return &client{apiKey, apiSecret, &http.Client{}}
+	return &client{apiKey, apiSecret, &http.Client{}, false}
+}
+
+func (c client) dumpRequest(r *http.Request) {
+	if r == nil {
+		log.Print("dumpReq ok: <nil>")
+		return
+	}
+	dump, err := httputil.DumpRequest(r, true)
+	if err != nil {
+		log.Print("dumpReq err:", err)
+	} else {
+		log.Print("dumpReq ok:", string(dump))
+	}
+}
+
+func (c client) dumpResponse(r *http.Response) {
+	if r == nil {
+		log.Print("dumpResponse ok: <nil>")
+		return
+	}
+	dump, err := httputil.DumpResponse(r, true)
+	if err != nil {
+		log.Print("dumpResponse err:", err)
+	} else {
+		log.Print("dumpResponse ok:", string(dump))
+	}
 }
 
 // doTimeoutRequest do a HTTP request with timeout
@@ -32,7 +61,13 @@ func (c *client) doTimeoutRequest(timer *time.Timer, req *http.Request) (*http.R
 	}
 	done := make(chan result, 1)
 	go func() {
+		if c.debug {
+			c.dumpRequest(req)
+		}
 		resp, err := c.httpClient.Do(req)
+		if c.debug {
+			c.dumpResponse(resp)
+		}
 		done <- result{resp, err}
 	}()
 	// Wait for the read or the timeout
@@ -52,7 +87,7 @@ func (c *client) do(method string, ressource string, payload string, authNeeded 
 	if strings.HasPrefix(ressource, "http") {
 		rawurl = ressource
 	} else {
-		rawurl = fmt.Sprintf("%s%s/%s", API_BASE, API_VERSION, ressource)
+		rawurl = fmt.Sprintf("%s/%s", API_BASE, ressource)
 	}
 
 	req, err := http.NewRequest(method, rawurl, strings.NewReader(payload))
@@ -75,7 +110,7 @@ func (c *client) do(method string, ressource string, payload string, authNeeded 
 		q.Set("apikey", c.apiKey)
 		q.Set("nonce", fmt.Sprintf("%d", nonce))
 		req.URL.RawQuery = q.Encode()
-		mac := hmac.New(sha512.New, []byte(c.apiSecret))
+		mac := hmac.New(sha512.New, []byte(strings.ToUpper(c.apiSecret)))
 		_, err = mac.Write([]byte(req.URL.String()))
 		sig := hex.EncodeToString(mac.Sum(nil))
 		req.Header.Add("apisign", sig)

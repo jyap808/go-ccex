@@ -8,8 +8,7 @@ import (
 )
 
 const (
-	API_BASE                   = "https://ccex.com/api/" // Ccex API endpoint
-	API_VERSION                = "v1.1"                  // Ccex API version
+	API_BASE                   = "https://c-cex.com/t" // Ccex API endpoint
 	DEFAULT_HTTPCLIENT_TIMEOUT = 30                      // HTTP client timeout
 )
 
@@ -32,9 +31,14 @@ type Ccex struct {
 	client *client
 }
 
+// set enable/disable http request/response dump
+func (c *Ccex) SetDebug(enable bool) {
+	c.client.debug = enable
+}
+
 // GetDistribution is used to get the distribution.
 func (b *Ccex) GetDistribution(market string) (distribution Distribution, err error) {
-	r, err := b.client.do("GET", "https://c-cex.com/t/api_pub.html?a=GetBalanceDistribution&currencyName="+strings.ToLower(market), "", false)
+	r, err := b.client.do("GET", "api_pub.html?a=GetBalanceDistribution&currencyName="+strings.ToLower(market), "", false)
 	if err != nil {
 		return
 	}
@@ -53,7 +57,7 @@ func (b *Ccex) GetDistribution(market string) (distribution Distribution, err er
 }
 
 func (b *Ccex) GetPairs() (pairs Pairs, err error) {
-	r, err := b.client.do("GET", "https://c-cex.com/t/pairs.json", "", false)
+	r, err := b.client.do("GET", "pairs.json", "", false)
 	if err != nil {
 		return
 	}
@@ -64,7 +68,7 @@ func (b *Ccex) GetPairs() (pairs Pairs, err error) {
 }
 
 func (b *Ccex) GetCoinNames() (coinnames CoinNames, err error) {
-	r, err := b.client.do("GET", "http://c-cex.com/t/coinnames.json", "", false)
+	r, err := b.client.do("GET", "coinnames.json", "", false)
 	if err != nil {
 		return
 	}
