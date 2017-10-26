@@ -31,6 +31,11 @@ type Ccex struct {
 	client *client
 }
 
+// set enable/disable http request/response dump
+func (c *Ccex) SetDebug(enable bool) {
+	c.client.debug = enable
+}
+
 // GetDistribution is used to get the distribution.
 func (b *Ccex) GetDistribution(market string) (distribution Distribution, err error) {
 	r, err := b.client.do("GET", "api_pub.html?a=GetBalanceDistribution&currencyName="+strings.ToLower(market), "", false)
