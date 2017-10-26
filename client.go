@@ -52,7 +52,7 @@ func (c *client) do(method string, ressource string, payload string, authNeeded 
 	if strings.HasPrefix(ressource, "http") {
 		rawurl = ressource
 	} else {
-		rawurl = fmt.Sprintf("%s%s/%s", API_BASE, API_VERSION, ressource)
+		rawurl = fmt.Sprintf("%s/%s", API_BASE, ressource)
 	}
 
 	req, err := http.NewRequest(method, rawurl, strings.NewReader(payload))
