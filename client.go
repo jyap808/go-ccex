@@ -110,7 +110,7 @@ func (c *client) do(method string, ressource string, payload string, authNeeded 
 		q.Set("apikey", c.apiKey)
 		q.Set("nonce", fmt.Sprintf("%d", nonce))
 		req.URL.RawQuery = q.Encode()
-		mac := hmac.New(sha512.New, []byte(c.apiSecret))
+		mac := hmac.New(sha512.New, []byte(strings.ToUpper(c.apiSecret)))
 		_, err = mac.Write([]byte(req.URL.String()))
 		sig := hex.EncodeToString(mac.Sum(nil))
 		req.Header.Add("apisign", sig)
